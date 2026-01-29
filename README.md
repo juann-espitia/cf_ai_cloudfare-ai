@@ -15,7 +15,7 @@ A stateful AI-powered chat application built entirely on Cloudflare Developer Pl
 ## How to try it out!
 
 ###  Option 1: Live
-You can use the "Live demo" link provided above to try it out!
+You can use the "Live Demo" link provided above to try it out!
 
 ### Option 2: Locally
 If you'd like to run t:
