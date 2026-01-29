@@ -3,7 +3,7 @@
 A stateful AI-powered chat application built entirely on Cloudflare Developer Platform.
 
 ## 🚀 Live Links
-- **Live Demo:** https://c3a37bb1.cf-ai-frontend.pages.dev
+- **Live Demo:** https://ai-chat-app-51e.pages.dev/
 - **Worker API:** https://proud-silence-9c58.juannespitia.workers.dev/
 
 ## 🛠️ Cloudflare Stack
