@@ -1,4 +1,4 @@
-# Cloudflare-AI
+# ✨ Cloudflare-AI
 
 A stateful AI-powered chat application built entirely on Cloudflare Developer Platform.
 
