@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <body class="bg-gradient-to-br from-primary to-secondary min-h-screen flex items-center justify-center p-4">
+    
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" style="height: 85vh;">
+        
+        <div class="bg-gradient-to-r from-primary to-secondary text-white p-6">
+            <h1 class="text-2xl font-bold text-center">✨ AI Chat Assistant</h1>
+            <p class="text-center text-sm opacity-90 mt-1">Powered by Cloudflare Workers AI</p>
+        </div>
+        
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
+            <div class="flex justify-start">
+                <div class="bg-white rounded-2xl rounded-tl-sm shadow-md p-4 max-w-[80%]">
+                    <p class="text-gray-800">👋 Hi! I'm your AI assistant, how can I help you today?</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white border-t border-gray-200 p-4">
+            <div class="flex gap-3">
+                <input 
+                    type="text" 
+                    id="messageInput"
+                    placeholder="Type your message..."
+                    class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-primary transition-colors"
+                    autocomplete="off"
+                />
+                <button 
+                    id="sendButton"
+                    class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                    Send
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-center">Press Enter to send</p>
+        </div>
+        
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages')
+        const messageInput = document.getElementById('messageInput')
+        const sendButton = document.getElementById('sendButton')
+
+        let userId = localStorage.getItem('chatUserId')
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(30).substring(1, 15)
+            localStorage.setItem('chatUserId', userId)
+        }
+
+        const WORKER_URL = 'http://localhost:8787'
+
+        function addMessage(content, isUser) {
+            const message = document.createElement('div')
+            message.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`
+
+            const bubble = document.createElement('div')
+            bubble.className = `rounded-2xl p-4 max-w-[80%] ${
+                isUser ? 'bg-gradient-to-r from-primary to-secondary text-white rounded-tr-sm' : 'bg-white shadow-md rounded-tl-sm'
+            }`
+
+            const text = document.createElement('p')
+            text.className = isUser ? 'text-white' : 'text-gray-800'
+            text.textContent = content
+
+            bubble.appendChild(text)
+            message.appendChild(bubble)
+            chatMessages.appendChild(message)
+
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior:'smooth'
+            })
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div')
+            typing.id = 'typingIndicator'
+            typing.className = 'flex justify-start'
+            typing.innerHTML = `<div class="bg-white rounded-2xl rounded-tl-sm shadow-md p-4">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div> `
+            chatMessages.appendChild(typing)
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            })
+        }
+
+        function removeTyping() {
+            const indicator = document.getElementById('typingIndicator')
+            if (indicator) indicator.remove()
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim()
+            if (!message) return;
+
+            addMessage(message,true)
+            messageInput.value = ''
+            sendButton.disabled = true
+
+            showTyping()
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        userId: userId
+                    })
+                })
+
+                const data = await response.json()
+
+                removeTyping()
+
+                if (data.reply) {
+                    addMessage(data.reply, false)
+                } else if (data.error) {
+                    addMessage('Error' + data.error, false)
+                }
+            } catch (error) {
+                removeTyping()
+                addMessage('Connection error!')
+                console.error('Error ', error)
+            }
+
+            sendButton.disabled = false
+            messageInput.focus()
+        }
+
+        sendButton.addEventListener('click', sendMessage)
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage()
+        })
+
+        messageInput.focus()
+    
+    </script>
+
+</body>
+</html>
