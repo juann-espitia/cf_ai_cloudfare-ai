@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Bot</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -17,6 +18,36 @@
             }
         }
     </script>
+    <style>
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .prose strong {
+            color: inherit;
+        }
+        
+        .prose code {
+            color: inherit;
+        }
+    </style>
 </head>
 <body>
     <body class="bg-gradient-to-br from-primary to-secondary min-h-screen flex items-center justify-center p-4">
@@ -79,11 +110,16 @@
                 isUser ? 'bg-gradient-to-r from-primary to-secondary text-white rounded-tr-sm' : 'bg-white shadow-md rounded-tl-sm'
             }`
 
-            const text = document.createElement('p')
-            text.className = isUser ? 'text-white' : 'text-gray-800'
-            text.textContent = content
+            const contentDiv = document.createElement('div');
+            content.className = isUser ? 'text-white prose prose-sm' : 'text-gray-800 prose prose-sm';
 
-            bubble.appendChild(text)
+            if (isUser) {
+                contentDiv.textContent = content;
+            } else {
+                contentDiv.innerHTML = marked.parse(content);
+            }
+
+            bubble.appendChild(contentDiv)
             message.appendChild(bubble)
             chatMessages.appendChild(message)
 
